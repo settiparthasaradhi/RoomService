@@ -1,57 +1,39 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
-import { Html5QrcodeScanner } from "html5-qrcode"; // QR Scanner Library
+import { useRouter } from "next/navigation";
+import React from "react";
 
 const RoomService = () => {
-  const [roomNumber, setRoomNumber] = useState(null);
-  const [status, setStatus] = useState("Waiting for scan...");
-  const scannerRef = useRef(null);
+  const router = useRouter();
 
-  useEffect(() => {
-    const scanner = new Html5QrcodeScanner("scanner", { fps: 10, qrbox: 250 });
-
-    scanner.render((decodedText) => {
-      if (decodedText >= 1 && decodedText <= 24) {
-        setRoomNumber(decodedText);
-        setStatus("Room Under Cleaning...");
-      } else {
-        alert("Invalid room number. Please scan a valid room QR.");
-      }
-    });
-
-    scannerRef.current = scanner;
-    return () => scanner.clear();
-  }, []);
-
-  const handleEndCleaning = () => {
-    setStatus(`Room ${roomNumber} Cleaning Completed ✅`);
-    setRoomNumber(null);
-  };
+  const roomNumbers = [
+    401, 402, 403, 404,
+    405, 406, 407, 408,
+    409, 410, 411, 412,
+    501, 502, 503, 504,
+    505, 506, 507, 508,
+    509, 510, 511, 512,
+  ];
 
   return (
-    <div className="p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-xl font-semibold mb-2 text-gray-700">Room Service Scanner</h2>
+    <div className="min-h-screen bg-gray-100 flex flex-col items-center px-4">
+      <header className="w-full p-6 bg-blue-500 text-white text-center text-3xl font-bold">
+        Zing Rooms - Room Service
+      </header>
 
-      {/* QR Scanner */}
-      <div id="scanner" className="w-1/2 bg-blue-200 p-6 rounded-md text-center">
-        <p className="text-gray-600">Scan the room QR code...</p>
+      <h1 className="text-black text-left text-3xl font-bold p-4">Select a Room</h1>
+
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-6 w-full max-w-3xl">
+        {roomNumbers.map((roomid) => (
+          <div      
+            key={roomid}
+            onClick={() => router.push(`/Roomservice/Servicedetails/${roomid}`)} // Navigate dynamically
+            className="w-full h-[100px] flex items-center justify-center text-lg font-semibold text-white rounded-md shadow-lg cursor-pointer bg-red-500 hover:bg-red-600"
+          >
+            Room {roomid}
+          </div>
+        ))}
       </div>
-
-      {/* Room Status */}
-      <div className="mt-4 p-4 bg-gray-100 rounded-md text-center">
-        <p className="text-blue-600">{status}</p>
-      </div>
-
-      {/* End Cleaning Button */}
-      {roomNumber && (
-        <button
-          onClick={handleEndCleaning}
-          className="w-full px-4 py-2 mt-4 text-white bg-green-500 rounded-md hover:bg-green-600"
-        >
-          End Cleaning
-        </button>
-      )}
     </div>
   );
 };
