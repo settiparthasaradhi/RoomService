@@ -21,7 +21,7 @@ const ServiceDetails = () => {
       alert("Please select a service type!");
       return;
     }
-    setStatus(`Room ${roomId}: ${serviceType} Service Started...`);
+    setStatus(`Room ${roomid}: ${serviceType} Service Started...`);
     setIsServiceStarted(true);
   };
 
