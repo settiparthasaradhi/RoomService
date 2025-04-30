@@ -5,9 +5,30 @@ import React, { useState } from "react";
 const Signup = () => {
   const [fullName, setFullName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [message, setMessage] = useState("");
 
-  const handleSignup = () => {
-    alert(`Signing up with:\nName: ${fullName}\nPhone: ${phoneNumber}`);
+  const handleSignup = async () => {
+    try {
+      const response = await fetch("http://localhost:5000/api/auth/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: fullName,
+          phoneNumber: phoneNumber,
+        }),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        setMessage(`✅ ${data.message}`);
+      } else {
+        setMessage(`❌ Error: ${data.message}`);
+      }
+    } catch (error) {
+      setMessage(`❌ Server Error: ${error.message}`);
+    }
   };
 
   return (
@@ -21,7 +42,7 @@ const Signup = () => {
             type="text"
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="w-full text-black px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
         </div>
 
@@ -31,7 +52,7 @@ const Signup = () => {
             type="tel"
             value={phoneNumber}
             onChange={(e) => setPhoneNumber(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="w-full text-black px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
         </div>
 
@@ -41,6 +62,10 @@ const Signup = () => {
         >
           Sign Up
         </button>
+
+        {message && (
+          <p className="mt-4 text-center text-sm font-medium text-gray-600">{message}</p>
+        )}
       </div>
     </div>
   );

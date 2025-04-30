@@ -5,36 +5,45 @@ import { useState, useEffect } from "react";
 
 const ServiceDetails = () => {
   const router = useRouter();
-  
-  const { roomid } = router.query; // ✅ Correct way to get dynamic roomId
-  console.log("Room ID:", roomid); // Debugging line to check roomId
+  const { roomid } = router.query; // Get roomId from URL
+
   const [serviceType, setServiceType] = useState("");
   const [status, setStatus] = useState("Waiting for service selection...");
   const [isServiceStarted, setIsServiceStarted] = useState(false);
 
   useEffect(() => {
-    if (!roomid) return; // Prevent errors when roomId is initially undefined
+    if (!roomid) return;
   }, [roomid]);
 
-  const startService = () => {
-    if (!serviceType) {
-      alert("Please select a service type!");
-      return;
+  // ✅ API Call to Update Room Status
+  const updateRoomStatus = async (newStatus) => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/rooms/${roomid}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          status: newStatus === "Completed" ? "Completed" : "Cleaning", // ✅ Ensure valid status
+          serviceType: newStatus, // ✅ Store service type separately
+        }),
+      });
+  
+      const data = await response.json();
+      if (response.ok) {
+        setStatus(`Room ${roomid}: ${newStatus} ✅`);
+        setIsServiceStarted(newStatus !== "Completed");
+      } else {
+        console.error("Error updating room:", data.message);
+      }
+    } catch (error) {
+      console.error("Error connecting to backend:", error);
     }
-    setStatus(`Room ${roomid}: ${serviceType} Service Started...`);
-    setIsServiceStarted(true);
-  };
-
-  const endService = () => {
-    setStatus(`Room ${roomid}: Cleaning Completed ✅`);
-    setIsServiceStarted(false);
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="w-full p-6 bg-indigo-600 text-white shadow-lg">
         <h1 className="text-center text-3xl font-bold tracking-tight">
-          Zing Rooms - Room {roomid || "Loading..."} {/* ✅ Prevents undefined errors */}
+          Zing Rooms - Room {roomid || "Loading..."}
         </h1>
       </header>
 
@@ -65,15 +74,15 @@ const ServiceDetails = () => {
           {/* Action Buttons */}
           <div className="flex flex-col gap-4">
             <button
-              onClick={startService}
-              disabled={isServiceStarted}
+              onClick={() => updateRoomStatus(serviceType)}
+              disabled={isServiceStarted || !serviceType}
               className="w-full px-6 py-3 bg-indigo-600 text-white font-medium rounded-md hover:bg-indigo-700 transition-colors shadow-sm disabled:bg-gray-300 disabled:hover:bg-gray-300 disabled:cursor-not-allowed"
             >
               Start Room Service
             </button>
 
             <button
-              onClick={endService}
+              onClick={() => updateRoomStatus("Completed")}
               disabled={!isServiceStarted}
               className="w-full px-6 py-3 bg-emerald-600 text-white font-medium rounded-md hover:bg-emerald-700 transition-colors shadow-sm disabled:bg-gray-300 disabled:hover:bg-gray-300 disabled:cursor-not-allowed"
             >
@@ -82,16 +91,8 @@ const ServiceDetails = () => {
           </div>
 
           {/* Status Indicator */}
-          <div className={`p-4 rounded-md border ${
-            status.includes("Started") ? "bg-amber-50 border-amber-200" :
-            status.includes("Completed") ? "bg-emerald-50 border-emerald-200" :
-            "bg-indigo-50 border-indigo-200"
-          }`}>
-            <p className={`text-center font-medium ${
-              status.includes("Started") ? "text-amber-700" :
-              status.includes("Completed") ? "text-emerald-700" :
-              "text-indigo-700"
-            }`}>
+          <div className={`p-4 rounded-md border ${status.includes("Started") ? "bg-amber-50 border-amber-200" : status.includes("Completed") ? "bg-emerald-50 border-emerald-200" : "bg-indigo-50 border-indigo-200"}`}>
+            <p className={`text-center font-medium ${status.includes("Started") ? "text-amber-700" : status.includes("Completed") ? "text-emerald-700" : "text-indigo-700"}`}>
               {status}
             </p>
           </div>
